@@ -1,3 +1,7 @@
+menu "Custom modules"
+	source "package/hello/Config.in"
+endmenu
+
 menu "Target packages"
 
 	source "package/busybox/Config.in"
@@ -8,7 +12,6 @@ menu "Target packages"
 	source "package/skeleton-init-openrc/Config.in"
 	source "package/skeleton-init-systemd/Config.in"
 	source "package/skeleton-init-sysv/Config.in"
-	source "package/my_module/Config.in"
 
 menu "Audio and video applications"
 	source "package/alsa-utils/Config.in"
