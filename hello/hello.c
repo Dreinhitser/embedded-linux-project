@@ -1,22 +1,48 @@
-#include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/proc_fs.h>
+#include <linux/seq_file.h>
+#include <linux/version.h>
+#include <linux/utsname.h>
 
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Your Name");
-MODULE_DESCRIPTION("A simple Hello World Kernel Module");
-MODULE_VERSION("1.0");
+#define PROC_NAME "example"
 
-static int __init hello_init(void)
+static int proc_show(struct seq_file *m, void *v)
 {
-    printk(KERN_INFO "Hello, World!\n");
+    seq_printf(m, "Hello from kernel procfs!\n");
+    seq_printf(m, "Kernel version: %s\n", utsname()->release);
+    seq_printf(m, "Current PID: %d\n", current->pid);
     return 0;
 }
 
-static void __exit hello_exit(void)
+static int proc_open(struct inode *inode, struct file *file)
 {
-    printk(KERN_INFO "Goodbye, World!\n");
+    return single_open(file, proc_show, NULL);
 }
 
-module_init(hello_init);
-module_exit(hello_exit);
+static const struct proc_ops proc_fops = {
+    .proc_open = proc_open,
+    .proc_read = seq_read,
+    .proc_lseek = seq_lseek,
+    .proc_release = single_release,
+};
+
+static int __init proc_init(void)
+{
+    proc_create(PROC_NAME, 0, NULL, &proc_fops);
+    printk(KERN_INFO "Procfs example created at /proc/%s\n", PROC_NAME);
+    return 0;
+}
+
+static void __exit proc_exit(void)
+{
+    remove_proc_entry(PROC_NAME, NULL);
+    printk(KERN_INFO "Procfs example removed from /proc/%s\n", PROC_NAME);
+}
+
+module_init(proc_init);
+module_exit(proc_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Dreinhitser");
+MODULE_DESCRIPTION("Simple procfs example");
